@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
   int surfSaturation = 0;
   
   //**loop through entries
-  numEntries=1000;
+  //  numEntries=1000;
   for (int entry=0; entry<numEntries; entry++) {
     if (entry%1==0) {
       cout << entry << "/" << numEntries << "\r";
