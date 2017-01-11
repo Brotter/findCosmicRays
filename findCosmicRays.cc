@@ -10,15 +10,28 @@
 #include "TTree.h"
 #include "TChain.h"
 #include "TFile.h"
+#include "TH2.h"
 #include "TH2D.h"
+#include "TEllipse.h" 
+#include "TMarker.h" 
+#include "TStyle.h" 
+#include "TCanvas.h"
 //anita
 #include "RawAnitaEvent.h"
 #include "RawAnitaHeader.h"
 #include "UsefulAdu5Pat.h"
 #include "Adu5Pat.h"
 #include "CalibratedAnitaEvent.h"
-#include "SineSubtract.h"
-
+#include "UsefulAnitaEvent.h"
+//cosmin's stuff
+#include "AnitaEventSummary.h"
+#include "AnalysisConfig.h" 
+#include "UCFilters.h" 
+#include "PeakFinder.h" 
+#include "FilterStrategy.h" 
+#include "Correlator.h" 
+#include "Analyzer.h" 
+#include "WaveformCombiner.h"
 
 using namespace std;
 
@@ -70,6 +83,7 @@ int main(int argc, char** argv) {
 
   if (argc != 3) {
     cout << "Usage: " << argv[0] << " [run] [output base filename]" << endl;
+    return -1;
   }
   else {
     runNum = atoi(argv[1]);
@@ -118,18 +132,14 @@ int main(int argc, char** argv) {
 
   //also make a Tree of event headers that pass cuts
   name.str("");
-  name << outFileName << "_headFile.root";
-  TFile *outHeadFile = TFile::Open(name.str().c_str(),"recreate");
-  TTree *outHeadTree = new TTree("headTree","headTree");
-  outHeadTree->Branch("header","RawAnitaHeader",&head);
+  name << outFileName << ".root";
+  TFile *outFile = TFile::Open(name.str().c_str(),"recreate");
+  TTree *outTree = new TTree("headTree","headTree");
 
-  name.str("");
-  name << outFileName << "_eventFile.root";
-  TFile *outEventFile = TFile::Open("calEventFileWais.root","recreate");
-  TTree *outEventTree = new TTree("eventTree","eventTree");
-  outEventTree->Branch("event","CalibratedAnitaEvent",&event);
+  //Lets make the summary object that I can shove into the output tree
+  AnitaEventSummary * eventSummary = new AnitaEventSummary; 
 
-
+  outTree->Branch("eventSummary",&eventSummary);
 
 
 
@@ -139,16 +149,17 @@ int main(int argc, char** argv) {
   //selection (quality) cuts
   int rfTrigCut = 0;
   int waisPulserCut = 0;
-  int mcMPulserCut = 0;
+  int mcmPulserCut = 0;
   int blastCut = 0;
   int surfSaturation = 0;
   
   
-
+  TFile *filterOutFile = TFile::Open("filterStrategyOutput.root","recreate");
  
   //**loop through entries
+  numEntries=10000;
   for (int entry=0; entry<numEntries; entry++) {
-    if (entry%1000==0) {
+    if (entry%1==0) {
       cout << entry << "/" << numEntries << "\r";
       fflush(stdout);
     }
@@ -194,80 +205,77 @@ int main(int argc, char** argv) {
 
     //***More selection cuts!
     //b) Wais divide pulser cut
-    double waisDist = usefulPal->getDistanceFromSource(AnitaLocations::LATITUDE_WAIS,
+    double waisDist = usefulPat->getDistanceFromSource(AnitaLocations::LATITUDE_WAIS,
 						       AnitaLocations::LONGITUDE_WAIS,
 						       AnitaLocations::ALTITUDE_WAIS);
     if (waisDist < 1000) {
-      double waisNs = usefulPal->getTriggerTimeNsFromSource(AnitaLocations::LATITUDE_WAIS,
+      double waisNs = usefulPat->getTriggerTimeNsFromSource(AnitaLocations::LATITUDE_WAIS,
 							    AnitaLocations::LONGITUDE_WAIS,
 							    AnitaLocations::ALTITUDE_WAIS);
       if ( abs(waisNs - head->triggerTimeNs) < 1000 ) {
-	waisCut++;
+	waisPulserCut++;
 	globalFailCut++;
       }
     }
 
     //c) McM pulser cut (just if I'm close to mcmurdo for now...)
-    double mcmDist = usefulPal->getDistanceFromSource(AnitaLocations::LATITUDE_LDB,
+    double mcmDist = usefulPat->getDistanceFromSource(AnitaLocations::LATITUDE_LDB,
 						      AnitaLocations::LONGITUDE_LDB,
 						      AnitaLocations::ALTITUDE_LDB);
     if (mcmDist < 1000) {
-      mcmCut++;
+      mcmPulserCut++;
       globalFailCut++;
     }
     
 
    
 
-    //**Okay thats all the selection cuts, lets actually get the waveform
+    //**Okay thats all the selection cuts, lets calibrate the waveform
     UsefulAnitaEvent *usefulEvent = new UsefulAnitaEvent(event,WaveCalType::kFull,head);
 
-    
-
     //make a filter strategy I guess?
-    TFile *filterOutFile = TFile::Open("filterStrategyOutput.root","recreate");
+
     FilterStrategy strategy(filterOutFile);
     strategy.addOperation(new UCorrelator::SineSubtractFilter(0.05, 0, 4)); 
 
+    //2) then filter the event and get a FilteredAnitaEvent back
+    FilteredAnitaEvent *filteredEvent = new FilteredAnitaEvent(usefulEvent, &strategy, pat, head,true);
+    //and a configuration for the analysis
+    UCorrelator::AnalysisConfig config; 
+    //and an analyzer object
+    UCorrelator::Analyzer analyzer(&config, true); ;
+    //clear the eventSummary so that I can fill it up with the analyzer
+    eventSummary->zeroInternals();
+    //3) then analyze the filtered event!
+    analyzer.analyze(filteredEvent, eventSummary); 
 
+    //Lets figure out which was the trigger (H=0, V=1, also defaults to H)
+    int whichTrig =  eventSummary->flags.isVPolTrigger;
     
+    //From there we can get the peak theta and peak phi bins of the map
+    double peakPhi = eventSummary->peak[whichTrig][0].phi;
+    double peakTheta = eventSummary->peak[whichTrig][0].theta;
+
+    //now I guess we have a bunch more info to make cuts on!
     
+      //    UCorrelator::WaveformCombiner *combiner = new UCorrelator::WaveformCombiner();
+      //    combiner->combine(peakPhi,peakTheta,filteredEvent);
+      //    const AnalysisWaveform *coherent = combiner->getCoherent();
 
+    outFile->cd();
+    outTree->Fill();
 
-    ///////////////////////////////////////////////////////////
-    //           CUTS(this gets them all, lol so easy!)      //
-    if ((head->trigType&0x0F) != 1) continue;
-    //The ground GPS loses sync a lot I think, though they are all in a 2.5uS band (.00025% of flight)
-    if ((expectDiff > 1000) || (expectDiff < -1500)) continue; 
-    ///////////////////////////////////////////////////////////
-
-    //fill up the graphs and histograms
-    trigTimeNs->Fill(entry,head->triggerTimeNs);
-    nsOffset->Fill(entry,expectDiff);
-    if (entry%1000==0) gNsExpect->SetPoint(gNsExpect->GetN(),entry,waisTriggerTimeNs);
-    
-    //write that header to the tree
-    outHeadFile->cd();
-    outHeadTree->Fill();
-    outEventFile->cd();
-    outEventTree->Fill();
+    delete filteredEvent;
+    delete usefulEvent;
+    delete usefulPat;
     
   }
-  //the header is full so close it up
-  outHeadFile->cd();
-  outHeadTree->Write();
-  outHeadFile->Close();
-  outEventFile->cd();
-  outEventTree->Write();
-  outEventFile->Close();
 
-  //open up a file to write the graphs, write them, then close it
-  TFile *output = TFile::Open("findWaisPulses.root","recreate");
-  trigTimeNs->Write();
-  nsOffset->Write();
-  gNsExpect->Write();
-  output->Close();
+  outFile->cd();
+  outTree->Write();
+  outFile->Close();
 
+  filterOutFile->Close();
 
   cout << "Physics complete!  See ya later buddy :)" << endl;
 
