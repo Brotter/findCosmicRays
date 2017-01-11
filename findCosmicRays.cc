@@ -138,9 +138,18 @@ int main(int argc, char** argv) {
 
   //Lets make the summary object that I can shove into the output tree
   AnitaEventSummary * eventSummary = new AnitaEventSummary; 
-
   outTree->Branch("eventSummary",&eventSummary);
 
+
+
+  //make a filter strategy I guess too?
+  name.str("");
+  name << outFileName << "_filtOutFile.root";
+  TFile *filterOutFile = TFile::Open(name.str().c_str(),"recreate");
+ 
+  FilterStrategy strategy(filterOutFile);
+  FilterOperation *sineSub = new UCorrelator::SineSubtractFilter(0.05, 0, 4);
+  strategy.addOperation(sineSub);
 
 
   //**counters for cuts
@@ -153,13 +162,8 @@ int main(int argc, char** argv) {
   int blastCut = 0;
   int surfSaturation = 0;
   
-  
-  name.str("");
-  name << outFileName << "_filtOutFile.root";
-  TFile *filterOutFile = TFile::Open(name.str().c_str(),"recreate");
- 
   //**loop through entries
-  numEntries=10000;
+  numEntries=1000;
   for (int entry=0; entry<numEntries; entry++) {
     if (entry%1==0) {
       cout << entry << "/" << numEntries << "\r";
@@ -234,11 +238,6 @@ int main(int argc, char** argv) {
 
     //**Okay thats all the selection cuts, lets calibrate the waveform
     UsefulAnitaEvent *usefulEvent = new UsefulAnitaEvent(event,WaveCalType::kFull,head);
-
-    //make a filter strategy I guess?
-
-    FilterStrategy strategy(filterOutFile);
-    strategy.addOperation(new UCorrelator::SineSubtractFilter(0.05, 0, 4)); 
 
     //2) then filter the event and get a FilteredAnitaEvent back
     FilteredAnitaEvent *filteredEvent = new FilteredAnitaEvent(usefulEvent, &strategy, pat, head,true);
