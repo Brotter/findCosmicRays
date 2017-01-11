@@ -154,7 +154,9 @@ int main(int argc, char** argv) {
   int surfSaturation = 0;
   
   
-  TFile *filterOutFile = TFile::Open("filterStrategyOutput.root","recreate");
+  name.str("");
+  name << outFileName << "_filtOutFile.root";
+  TFile *filterOutFile = TFile::Open(name.str().c_str(),"recreate");
  
   //**loop through entries
   numEntries=10000;
