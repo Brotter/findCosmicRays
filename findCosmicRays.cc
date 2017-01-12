@@ -148,8 +148,8 @@ int main(int argc, char** argv) {
   TFile *filterOutFile = TFile::Open(name.str().c_str(),"recreate");
  
   FilterStrategy strategy(filterOutFile);
-  FilterOperation *sineSub = new UCorrelator::SineSubtractFilter(0.05, 0, 4);
-  strategy.addOperation(sineSub);
+  //  FilterOperation *sineSub = new UCorrelator::SineSubtractFilter(0.05, 0, 4);
+  //  strategy.addOperation(sineSub);
 
 
   //**counters for cuts
