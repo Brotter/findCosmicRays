@@ -18,12 +18,14 @@ void globClusterFiles(){
   }
 
 
-  TH2D *hInterVsHilb = new TH2D("hInterVsHilb","Interferometric Peak vs Hilbert Peak;Interferometric Peak (?); Hilbert Peak (mV)",   150,0,0.15,  100,0,100);
+  TH2D *hInterVsHilbH = new TH2D("hInterVsHilbH","Interferometric Peak vs Hilbert Peak (Hpol);Interferometric Peak (?); Hilbert Peak (mV)",   150,0,0.15,  100,0,100);
+
+  TH2D *hInterVsHilbV = new TH2D("hInterVsHilbV","Interferometric Peak vs Hilbert Peak (Vpol);Interferometric Peak (?); Hilbert Peak (mV)",   150,0,0.15,  100,0,100);
 
   TH2D *hWaisPulses = new TH2D("hWaisPulses","Interferometric Peak vs Hilbert Peak (WAIS Pulses);Interferometric Peak (?); Hilbert Peak (mV)",   150,0,0.15,  100,0,100);
 
 
-  TH2D *hLDBPulses = new TH2D("hLDBPulses","Interferometric Peak vs Hilbert Peak (WAIS Pulses);Interferometric Peak (?); Hilbert Peak (mV)",   150,0,0.15,  100,0,100);
+  TH2D *hLDBPulses = new TH2D("hLDBPulses","Interferometric Peak vs Hilbert Peak (LDB Pulses);Interferometric Peak (?); Hilbert Peak (mV)",   150,0,0.15,  100,0,100);
 
   
 
@@ -52,24 +54,35 @@ void globClusterFiles(){
       skippedEvents++;
       continue;
     }
-	
+
     
     //split into pulser and non-pulser
     if (eventSummary->flags.pulser == 1) {
       hWaisPulses->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert);
     }
     else if (eventSummary->flags.pulser == 2) {
-      hLDB->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert);
+      hLDBPulses->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert);
     }
     else {
-      hInterVsHilb->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert);
+      if (eventSummary->flags.isHPolTrigger == 1) {
+	hInterVsHilbH->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert); }
+      if (eventSummary->flags.isVPolTrigger == 1) {
+	hInterVsHilbV->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert); }
+    
     }
 
   }
 
   cout << "Skipped " << skippedEvents << " events from cuts" << endl;
 
-  hInterVsHilb->Draw("colz");
+  TFile *outFile = TFile::Open("globClusterFiles.root","recreate");
+
+  hWaisPulses->Write();
+  hLDBPulses->Write();
+  hInterVsHilbH->Write();
+  hInterVsHilbV->Write();
+
+  outFile->Close();
  
   return;
  
