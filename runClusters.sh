@@ -9,7 +9,7 @@
 #
 #################################################
 
-startTime=`date +%m.%d.%y_%H.%M`
+startTime=`date +%m.%d.%y_%Hh`
 sharedDir="/home/brotter/nfsShared/results/findCosmicRays/"${startTime}
 mkdir ${sharedDir}
 
