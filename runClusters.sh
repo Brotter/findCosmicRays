@@ -9,6 +9,9 @@
 #
 #################################################
 
+startTime=`date +%m.%d.%y_%H.%M`
+sharedDir="/home/brotter/nfsShared/results/findCosmicRays/"${startTime}
+mkdir ${sharedDir}
 
 
 if [ `hostname | cut -d"." -f1` == "anitaI" ]; then
@@ -29,6 +32,6 @@ else
 fi
 
 for run in `seq ${startSeq} ${stopSeq}`; do
-    nice ./findCosmicRays ${run} ${run} 1> log/${i}.log 2>&1 &
+    nice ./findCosmicRays ${run} ${sharedDir}/${run} 1> log/${run}.log 2>&1 &
 done
     
