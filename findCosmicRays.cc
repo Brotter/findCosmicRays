@@ -80,18 +80,26 @@ int main(int argc, char** argv) {
 
   int runNum;
   string outFileName;
+  int lenEntries = -1;
 
-  if (argc != 3) {
-    cout << "Usage: " << argv[0] << " [run] [output base filename]" << endl;
-    return -1;
-  }
-  else {
+  if (argc==3) {
     runNum = atoi(argv[1]);
     outFileName = argv[2];
     cout << "Hello!  Let us do some physics mate" << endl;
     cout << "Using run " << runNum << " and outfile " << outFileName << endl;
   }
-
+  else if (argc==4) {
+    runNum = atoi(argv[1]);
+    outFileName = argv[2];
+    lenEntries = atoi(argv[3]);
+    cout << "Hello!  Let us do some physics mate" << endl;
+    cout << "Using run " << runNum << " and outfile " << outFileName << endl;
+    cout << "Only doing " << lenEntries << " of the first entries";
+  }
+  else {
+    cout << "Usage: " << argv[0] << " [run] [output base filename] [opt: num entries]" << endl;
+    return -1;
+  }
 
 
 
@@ -163,10 +171,12 @@ int main(int argc, char** argv) {
   int surfSaturation = 0;
   
   //**loop through entries
-  //  numEntries=1000;
-  for (int entry=0; entry<numEntries; entry++) {
+  //option to have less entries! (-1 is the default, so in case you don't specify)
+  if (lenEntries == -1) lenEntries = numEntries;
+
+  for (int entry=0; entry<lenEntries; entry++) {
     if (entry%1==0) {
-      cout << entry << "/" << numEntries << "\r";
+      cout << entry << "/" << lenEntries << "\r";
       fflush(stdout);
     }
     //get all the pointers set right
