@@ -67,7 +67,7 @@ void globClusterFiles(){
       if (eventSummary->flags.isHPolTrigger == 1) {
 	hInterVsHilbH->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert); }
       if (eventSummary->flags.isVPolTrigger == 1) {
-	hInterVsHilbV->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert); }
+	hInterVsHilbV->Fill(eventSummary->peak[1][0].value,eventSummary->coherent[1][0].peakHilbert); }
     
     }
 

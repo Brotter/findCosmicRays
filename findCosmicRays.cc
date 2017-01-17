@@ -158,17 +158,16 @@ int main(int argc, char** argv) {
   FilterStrategy strategy(filterOutFile);
   //  FilterOperation *sineSub = new UCorrelator::SineSubtractFilter(0.05, 0, 4);
   //  strategy.addOperation(sineSub);
+  UCorrelator::applyAbbysFilterStrategy(&strategy);
 
 
-  //**counters for cuts
-  //global count for how many cuts an event fails
-  int globalFailCut = 0;
-  //selection (quality) cuts
-  int rfTrigCut = 0;
-  int waisPulserCut = 0;
-  int mcmPulserCut = 0;
-  int blastCut = 0;
-  int surfSaturation = 0;
+  //and a configuration for the analysis
+  UCorrelator::AnalysisConfig config; 
+  //set the response to my "single" response
+  config.response_option = UCorrelator::AnalysisConfig::ResponseOption_t::ResponseSingleBRotter;
+  //and an analyzer object
+  UCorrelator::Analyzer analyzer(&config, true); ;
+  
   
   //**loop through entries
   //option to have less entries! (-1 is the default, so in case you don't specify)
@@ -185,76 +184,12 @@ int main(int argc, char** argv) {
     patTree->GetEntry(entry);
 
 
-    //***I can do some quick cuts before I have to do much work
-    //a) rf trigs only
-    if ((head->trigType&0x0F) != 1){
-      rfTrigCut++;
-      globalFailCut++;
-    }
-    //d) payload blasts
-    //  more than 15 channels withVpp > 400 counts
-    //e) surf saturation
-    //  the max is greater than 1500ADC for any point that isn't a clock (this is wrong but fast)
-    int saturatedCounter = 0;
-    int blastCounter = 0;
-    for (int surf=0; surf<12; surf++) {
-      for (int chan=0; chan<8; chan++) {
-	int index = surf*9 + chan;
-	int Vpp = event->xMax[index] - event->xMin[index];
-	if ( Vpp > 1500 ) saturatedCounter++;
-	if ( Vpp > 400  ) blastCounter++;
-      }
-    }
-    if (saturatedCounter > 3) {
-      surfSaturation++;
-      globalFailCut++;
-    }
-    if (blastCounter > 15) {
-      blastCut++;
-      globalFailCut++;
-    }
-
-
-    //Then create the gps object (needed to do the wais cuts)
-    UsefulAdu5Pat *usefulPat = new UsefulAdu5Pat(pat);
-
-
-    //***More selection cuts!
-    //b) Wais divide pulser cut
-    double waisDist = usefulPat->getDistanceFromSource(AnitaLocations::LATITUDE_WAIS,
-						       AnitaLocations::LONGITUDE_WAIS,
-						       AnitaLocations::ALTITUDE_WAIS);
-    if (waisDist < 1000) {
-      double waisNs = usefulPat->getTriggerTimeNsFromSource(AnitaLocations::LATITUDE_WAIS,
-							    AnitaLocations::LONGITUDE_WAIS,
-							    AnitaLocations::ALTITUDE_WAIS);
-      if ( abs(waisNs - head->triggerTimeNs) < 1000 ) {
-	waisPulserCut++;
-	globalFailCut++;
-      }
-    }
-
-    //c) McM pulser cut (just if I'm close to mcmurdo for now...)
-    double mcmDist = usefulPat->getDistanceFromSource(AnitaLocations::LATITUDE_LDB,
-						      AnitaLocations::LONGITUDE_LDB,
-						      AnitaLocations::ALTITUDE_LDB);
-    if (mcmDist < 1000) {
-      mcmPulserCut++;
-      globalFailCut++;
-    }
-    
-
-   
-
-    //**Okay thats all the selection cuts, lets calibrate the waveform
+    //1) Calibrate the waveform
     UsefulAnitaEvent *usefulEvent = new UsefulAnitaEvent(event,WaveCalType::kFull,head);
 
     //2) then filter the event and get a FilteredAnitaEvent back
     FilteredAnitaEvent *filteredEvent = new FilteredAnitaEvent(usefulEvent, &strategy, pat, head,true);
-    //and a configuration for the analysis
-    UCorrelator::AnalysisConfig config; 
-    //and an analyzer object
-    UCorrelator::Analyzer analyzer(&config, true); ;
+
     //clear the eventSummary so that I can fill it up with the analyzer
     eventSummary->zeroInternals();
     //3) then analyze the filtered event!
@@ -262,23 +197,12 @@ int main(int argc, char** argv) {
 
     //Lets figure out which was the trigger (H=0, V=1, also defaults to H)
     int whichTrig =  eventSummary->flags.isVPolTrigger;
-    
-    //From there we can get the peak theta and peak phi bins of the map
-    double peakPhi = eventSummary->peak[whichTrig][0].phi;
-    double peakTheta = eventSummary->peak[whichTrig][0].theta;
-
-    //now I guess we have a bunch more info to make cuts on!
-    
-      //    UCorrelator::WaveformCombiner *combiner = new UCorrelator::WaveformCombiner();
-      //    combiner->combine(peakPhi,peakTheta,filteredEvent);
-      //    const AnalysisWaveform *coherent = combiner->getCoherent();
 
     outFile->cd();
     outTree->Fill();
 
     delete filteredEvent;
     delete usefulEvent;
-    delete usefulPat;
     
   }
 
