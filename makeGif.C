@@ -1,3 +1,5 @@
+#include "AnitaEventSummary.h"
+
 void makeGif(string dataDir){
 
 
@@ -6,6 +8,8 @@ void makeGif(string dataDir){
 
   TCanvas *c1 = new TCanvas("c1","c1",1000,800);
   
+  TChain *inTree = new TChain("headTree","headTree");
+
 
   stringstream name;
   for (int run=130; run<384; run++) {
@@ -14,7 +18,6 @@ void makeGif(string dataDir){
    
     name.str("");
     name << dataDir << "/" << run << ".root";
-    TChain *inTree = new TChain("headTree","headTree");
     inTree->Add(name.str().c_str());
 
   }
@@ -41,7 +44,7 @@ void makeGif(string dataDir){
 
     cout << frame << "/" << numFrames << endl;
     int startEntry = frame*numFrames;
-    int stopentry = (frame+1)*numFrames;
+    int stopEntry = (frame+1)*numFrames;
 
     for (int entry=startEntry; entry<stopEntry; entry++) {
     inTree->GetEntry(entry);
