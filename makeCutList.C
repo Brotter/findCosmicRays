@@ -1,3 +1,5 @@
+#include "AnitaEventSummary.h"
+
 void makeCutList() {
 
   /*
@@ -15,7 +17,7 @@ void makeCutList() {
   for (int run=130; run<194; run++) {
     name.str("");
     name << "/home/brotter/nfsShared/results/findCosmicRays/firstAttempt/" << run << ".root";
-    inTree->Add(inFileName.c_str());
+    inTree->Add(name.str().c_str());
   }
 
 
