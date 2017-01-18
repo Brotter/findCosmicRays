@@ -161,8 +161,8 @@ int main(int argc, char** argv) {
   FilterStrategy strategy;
   //Add the actual Filters
   //  with the sine subtract alghorithm
-  //  FilterOperation *sineSub = new UCorrelator::SineSubtractFilter(0.05, 0, 4);
-  //  strategy.addOperation(sineSub);
+  FilterOperation *sineSub = new UCorrelator::SineSubtractFilter(0.05, 0, 4);
+  strategy.addOperation(sineSub);
   //  with abby's list of filtering
   //  UCorrelator::applyAbbysFilterStrategy(&strategy);
 

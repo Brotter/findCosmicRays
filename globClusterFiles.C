@@ -11,7 +11,7 @@ void globClusterFiles(){
   struct stat buffer;   
   for (int run=130; run<193; run++) {
     name.str("");
-    name << "/home/brotter/nfsShared/results/findCosmicRays/" << run << ".root";
+    name << "/home/brotter/nfsShared/results/findCosmicRays/firstAttempt/" << run << ".root";
 
     if (stat (name.str().c_str(), &buffer) == 0) {
       resultTree->Add(name.str().c_str()); }
