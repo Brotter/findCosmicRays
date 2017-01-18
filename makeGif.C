@@ -1,6 +1,9 @@
 void makeGif(string dataDir){
 
 
+  const int numFrames = 1000;
+
+
   TCanvas *c1 = new TCanvas("c1","c1",1000,800);
   
 
@@ -11,34 +14,38 @@ void makeGif(string dataDir){
    
     name.str("");
     name << dataDir << "/" << run << ".root";
-    TFile* inFile = TFile::Open(name.str().c_str());
+    TChain *inTree = new TChain("headTree","headTree");
+    inTree->Add(name.str().c_str());
+
+  }
+
+
+
+  AnitaEventSummary * eventSummary = NULL;
+  inTree->SetBranchAddress("eventSummary",&eventSummary);
+  
     
-    if (inFile == NULL) {
-      cout << "run " << run << " does not exist" << endl;
-      continue;
-    }
-
-    TTree *inTree = (TTree*)inFile->Get("headTree");
-
-
-    AnitaEventSummary * eventSummary = NULL;
-    inTree->SetBranchAddress("eventSummary",&eventSummary);
+  TH2D *hHilbVsMap = new TH2D("hHilbVsMap"," Interferometric Peak vs Hilbert Peak; Interferometric Peak (?); Hilbert Peak (mv)",
+			      150,0,0.15,     100,0,100);
+  
+  TGraph *gWaisPulses = new TGraph();
+  gWaisPulses->SetName("gWaisPulses");
+  gWaisPulses->SetMarkerStyle(3);
+  
+  
+  int lenEntries = inTree->GetEntries();
     
-    
-    TH2D *hHilbVsMap = new TH2D("hHilbVsMap"," Interferometric Peak vs Hilbert Peak; Interferometric Peak (?); Hilbert Peak (mv)",
-				150,0,0.15,     100,0,100);
-    
-    TGraph *gWaisPulses = new TGraph();
-    gWaisPulses->SetName("gWaisPulses");
-    gWaisPulses->SetMarkerStyle(3);
+  int entriesPerFrame = lenEntries/numFrames;
+  for (int frame=0; frame < numFrames; frame++) {
+    c1->Clear();
 
+    cout << frame << "/" << numFrames << endl;
+    int startEntry = frame*numFrames;
+    int stopentry = (frame+1)*numFrames;
 
-    int lenEntries = inTree->GetEntries();
-    
-    for (int entry=0; entry<lenEntries; entry++) {
-      if (entry% 10000 == 0) cout << entry << "/" << lenEntries << endl;
-      inTree->GetEntry(entry);
-
+    for (int entry=startEntry; entry<stopEntry; entry++) {
+    inTree->GetEntry(entry);
+      
       if (eventSummary->flags.pulser == 0) {
 	hHilbVsMap->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert); }
       else if (eventSummary->flags.pulser == 1) {
@@ -57,8 +64,8 @@ void makeGif(string dataDir){
     name.str("");
     c1->SaveAs("output.gif+");
 
-
-    inFile->Close();
+    gWaisPulses->Set(0);
+    hHilbVsMap->Reset();
 
   }
 
