@@ -29,6 +29,10 @@ void makeCutList() {
 			      150,0,0.15,     100,0,100);
 
 
+  AntarcticaMapPlotter *aMap = new AntarcticaMapPlotter("mapPlotter","mapPlotter",1000,1000);
+  aMap->addHistogram("pointMap","pointMap",1000,1000);
+
+
   //draw cut line
   TF1 *normalToFit = new TF1("normalToFit","[0]*x + [1]",0,0.15);
   normalToFit->SetParameter(0,-7455.77);
@@ -44,21 +48,35 @@ void makeCutList() {
     if (entry% 1000 == 0) cout << entry << "/" << lenEntries << endl;
     inTree->GetEntry(entry);
 
-    double X = eventSummary->peak[0][0].value;
-    double Y = eventSummary->coherent[0][0].peakHilbert;
+    int whichPol = eventSummary->flags.isVPolTrigger;
+
+    double X = eventSummary->peak[whichPol][0].value;
+    double Y = eventSummary->coherent[whichPol][0].peakHilbert;
     hHilbVsMap->Fill(X,Y);
     
     if (normalToFit->Eval(X) < Y) {
       //      cout << eventSummary->eventNumber << endl;
       numPassingCuts++;
+      aMap->setCurrentHistogram("pointMap");
+      aMap->Fill(eventSummary->peak[whichPol][0].latitude,eventSummary->peak[0][0].longitude);
+
+
     }
 
 
   }
 
+  TCanvas *c1 = new TCanvas("c1","c1",1000,800);
+  c1->Divide(2,1);
+
+  c1->cd(1);
+  aMap->DrawHist("colz");
+
+  c1->cd(2);
   hHilbVsMap->Draw("colz");
   normalToFit->Draw("same");
 
+  cout << "numPassingCuts: " << numPassingCuts << endl;
 
   return;
 
