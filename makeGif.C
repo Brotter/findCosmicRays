@@ -59,8 +59,6 @@ void makeGif(string dataDir){
 
 
     inFile->Close();
-    delete gWaisPulses;
-    delete hHilbVsMap;
 
   }
 
