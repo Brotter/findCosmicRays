@@ -49,7 +49,7 @@ void makeCutList() {
     hHilbVsMap->Fill(X,Y);
     
     if (normalToFit->Eval(X) < Y) {
-      cout << eventSummary->eventNumber << endl;
+      //      cout << eventSummary->eventNumber << endl;
       numPassingCuts++;
     }
 
