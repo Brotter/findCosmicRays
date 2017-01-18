@@ -28,7 +28,7 @@ void makeGif(string dataDir){
   inTree->SetBranchAddress("eventSummary",&eventSummary);
   
     
-  TH2D *hHilbVsMap = new TH2D("hHilbVsMap"," Interferometric Peak vs Hilbert Peak; Interferometric Peak (?); Hilbert Peak (mv)",
+  TH2D *hHilbVsMap = new TH2D("hHilbVsMap","placeholder",
 			      150,0,0.15,     100,0,100);
   
   TGraph *gWaisPulses = new TGraph();
@@ -43,11 +43,11 @@ void makeGif(string dataDir){
     c1->Clear();
 
     cout << frame << "/" << numFrames << endl;
-    int startEntry = frame*numFrames;
-    int stopEntry = (frame+1)*numFrames;
+    int startEntry = frame*entriesPerFrame;
+    int stopEntry = (frame+1)*entriesPerFrame;
 
     for (int entry=startEntry; entry<stopEntry; entry++) {
-    inTree->GetEntry(entry);
+      inTree->GetEntry(entry);
       
       if (eventSummary->flags.pulser == 0) {
 	hHilbVsMap->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert); }
@@ -60,6 +60,11 @@ void makeGif(string dataDir){
     
 
     c1->cd();
+
+    name.str("");
+    name << "Interferometric Peak vs Hilbert Peak (run " << eventSummary->run << ")";
+    name << "; Interferometric Peak; Hilbert Peak (mv)";
+    hHilbVsMap->SetTitle(name.str().c_str());
     hHilbVsMap->Draw("colz");
     if (gWaisPulses->GetN() > 0) {
       gWaisPulses->Draw("pSame"); }
