@@ -65,7 +65,8 @@ void makeGif(string dataDir){
       gWaisPulses->Draw("pSame"); }
     
     name.str("");
-    c1->SaveAs("output.gif+");
+    name << "gifImages/" << frame << ".png";
+    c1->SaveAs(name.str().c_str());
 
     gWaisPulses->Set(0);
     hHilbVsMap->Reset();
