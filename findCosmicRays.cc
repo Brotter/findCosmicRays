@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
     lenEntries = atoi(argv[3]);
     cout << "Hello!  Let us do some physics mate" << endl;
     cout << "Using run " << runNum << " and outfile " << outFileName << endl;
-    cout << "Only doing " << lenEntries << " of the first entries";
+    cout << "Only doing " << lenEntries << " of the first entries" << endl;
   }
   else {
     cout << "Usage: " << argv[0] << " [run] [output base filename] [opt: num entries]" << endl;
@@ -142,6 +142,7 @@ int main(int argc, char** argv) {
   name.str("");
   name << outFileName << ".root";
   TFile *outFile = TFile::Open(name.str().c_str(),"recreate");
+  outFile->cd();
   TTree *outTree = new TTree("headTree","headTree");
 
   //Lets make the summary object that I can shove into the output tree
@@ -163,15 +164,15 @@ int main(int argc, char** argv) {
   //  FilterOperation *sineSub = new UCorrelator::SineSubtractFilter(0.05, 0, 4);
   //  strategy.addOperation(sineSub);
   //  with abby's list of filtering
-  UCorrelator::applyAbbysFilterStrategy(&strategy);
+  //  UCorrelator::applyAbbysFilterStrategy(&strategy);
 
 
   //and a configuration for the analysis
   UCorrelator::AnalysisConfig config; 
   //set the response to my "single" response
   config.response_option = UCorrelator::AnalysisConfig::ResponseOption_t::ResponseSingleBRotter;
-  //and an analyzer object
-  UCorrelator::Analyzer analyzer(&config, true); ;
+  //and create an analyzer object (need to create it every time I guess)
+  UCorrelator::Analyzer *analyzer = new UCorrelator::Analyzer(&config); ;
   
   
   //**loop through entries
@@ -198,7 +199,7 @@ int main(int argc, char** argv) {
     //clear the eventSummary so that I can fill it up with the analyzer
     eventSummary->zeroInternals();
     //3) then analyze the filtered event!
-    analyzer.analyze(filteredEvent, eventSummary); 
+    analyzer->analyze(filteredEvent, eventSummary); 
 
     //Lets figure out which was the trigger (H=0, V=1, also defaults to H)
     int whichTrig =  eventSummary->flags.isVPolTrigger;
@@ -208,14 +209,17 @@ int main(int argc, char** argv) {
 
     delete filteredEvent;
     delete usefulEvent;
-    
+    //    analyzer->clearInteractiveMemory();
   }
+
 
   outFile->cd();
   outTree->Write();
   outFile->Close();
 
-  cout << "Physics complete!  See ya later buddy :)" << endl;
+  delete eventSummary;
+
+  //  cout << "Physics complete!  See ya later buddy :)" << endl;
 
   return 1;
   

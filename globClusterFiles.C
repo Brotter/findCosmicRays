@@ -9,7 +9,7 @@ void globClusterFiles(){
   
   stringstream name;
   struct stat buffer;   
-  for (int run=130; run<384; run++) {
+  for (int run=130; run<193; run++) {
     name.str("");
     name << "/home/brotter/nfsShared/results/findCosmicRays/" << run << ".root";
 
@@ -57,6 +57,8 @@ void globClusterFiles(){
 
     
     //split into pulser and non-pulser
+    
+
     if (eventSummary->flags.pulser == 1) {
       hWaisPulses->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert);
     }
@@ -68,7 +70,6 @@ void globClusterFiles(){
 	hInterVsHilbH->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert); }
       if (eventSummary->flags.isVPolTrigger == 1) {
 	hInterVsHilbV->Fill(eventSummary->peak[1][0].value,eventSummary->coherent[1][0].peakHilbert); }
-    
     }
 
   }
