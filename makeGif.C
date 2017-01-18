@@ -36,7 +36,7 @@ void makeGif(string dataDir){
     int lenEntries = inTree->GetEntries();
     
     for (int entry=0; entry<lenEntries; entry++) {
-      if (entry% 1000 == 0) cout << entry << "/" << lenEntries << endl;
+      if (entry% 10000 == 0) cout << entry << "/" << lenEntries << endl;
       inTree->GetEntry(entry);
 
       if (eventSummary->flags.pulser == 0) {
@@ -51,13 +51,13 @@ void makeGif(string dataDir){
 
     c1->cd();
     hHilbVsMap->Draw("colz");
-    gWaisPulses->Draw("pSame");
+    if (gWaisPulses->GetN() > 0) {
+      gWaisPulses->Draw("pSame"); }
     
     name.str("");
     c1->SaveAs("output.gif+");
 
 
-    delete inTree;
     inFile->Close();
     delete gWaisPulses;
     delete hHilbVsMap;
