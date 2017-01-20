@@ -20,7 +20,7 @@ void makeCutList(string dataDir="0") {
   TChain *inTree = new TChain("headTree","headTree");
 
   stringstream name;
-  for (int run=130; run<194; run++) {
+  for (int run=130; run<440; run++) {
     name.str("");
     name << "/home/brotter/nfsShared/results/findCosmicRays/" << dataDir << "/" << run << ".root";
     inTree->Add(name.str().c_str());
@@ -51,7 +51,7 @@ void makeCutList(string dataDir="0") {
 
   int lenEntries = inTree->GetEntries();  
   for (int entry=0; entry<lenEntries; entry++) {
-    if (entry% 1000 == 0) cout << entry << "/" << lenEntries << endl;
+    if (entry% 1000 == 0) cout << entry << "/" << lenEntries << "\r";
     inTree->GetEntry(entry);
 
     int whichPol = eventSummary->flags.isVPolTrigger;
