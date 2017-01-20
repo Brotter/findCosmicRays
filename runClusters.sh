@@ -12,7 +12,7 @@
 startTime=`date +%m.%d.%y_%Hh`
 sharedDir="/home/brotter/nfsShared/results/findCosmicRays/"${startTime}
 mkdir ${sharedDir}
-mkdir $[sharedDir}"/log"
+mkdir ${sharedDir}"/log"
 
 if [ `hostname | cut -d"." -f1` == "anitaI" ]; then
     startSeq=130
