@@ -1,6 +1,6 @@
 #include "AnitaEventSummary.h"
 
-void makeCutList() {
+void makeCutList(string dataDir="0") {
 
   /*
 
@@ -11,12 +11,17 @@ void makeCutList() {
 
    */
 
+  if (dataDir == "0") {
+    cout << "Using default directory 01.19.17_22h" << endl;
+    dataDir = "01.19.17_22h";
+
+
   TChain *inTree = new TChain("headTree","headTree");
 
   stringstream name;
   for (int run=130; run<194; run++) {
     name.str("");
-    name << "/home/brotter/nfsShared/results/findCosmicRays/firstAttempt/" << run << ".root";
+    name << "/home/brotter/nfsShared/results/findCosmicRays/" << dataDir << "/" << run << ".root";
     inTree->Add(name.str().c_str());
   }
 
