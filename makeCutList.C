@@ -35,6 +35,9 @@ void makeCutList(string dataDir="0") {
 			      150,0,0.15,     100,0,100);
 
 
+  TH2D *hLatVsLong = new TH2D("pointMap","pointMap",
+			      1000,-90,-60,  1000, -180,180);
+
   AntarcticaMapPlotter *aMap = new AntarcticaMapPlotter("mapPlotter","mapPlotter",1000,1000);
   aMap->addHistogram("pointMap","pointMap",1000,1000);
 
@@ -64,23 +67,28 @@ void makeCutList(string dataDir="0") {
       //      cout << eventSummary->eventNumber << endl;
       numPassingCuts++;
       aMap->setCurrentHistogram("pointMap");
-      aMap->Fill(eventSummary->peak[whichPol][0].latitude,eventSummary->peak[0][0].longitude);
-
+      double lat = eventSummary->peak[whichPol][0].latitude;
+      double lon = eventSummary->peak[0][0].longitude;
+      aMap->Fill(lat,lon);
+      hLatVsLong->Fill(lat,lon);
 
     }
 
 
   }
 
+  aMap->DrawHist("colz");
+
   TCanvas *c1 = new TCanvas("c1","c1",1000,800);
   c1->Divide(2,1);
 
   c1->cd(1);
-  aMap->DrawHist("colz");
-
-  c1->cd(2);
   hHilbVsMap->Draw("colz");
   normalToFit->Draw("same");
+
+  c1->cd(2);
+  hLatVsLong->Draw("colz");
+
 
   cout << "numPassingCuts: " << numPassingCuts << endl;
 
