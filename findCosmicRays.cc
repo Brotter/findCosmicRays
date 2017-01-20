@@ -112,7 +112,8 @@ int main(int argc, char** argv) {
 
   char* dataDir = getenv("ANITA3_DATA");
   name.str("");
-  name << dataDir << "run" << runNum << "/headFile" << runNum << ".root";
+  //  name << dataDir << "run" << runNum << "/headFile" << runNum << ".root";
+  name << dataDir << "run" << runNum << "/decimatedHeadFile" << runNum << ".root";
   headTree->Add(name.str().c_str());
   
   name.str("");
@@ -138,6 +139,11 @@ int main(int argc, char** argv) {
   cout << "I found " << eventTree->GetEntries() << " event entries" << endl;
   cout << "I found " << patTree->GetEntries() << " gps entries" << endl;
 
+  //using the decimated data, so I need to grab the correct entries!
+  eventTree->BuildIndex("eventNumber");
+  patTree->BuildIndex("eventNumber");
+  
+
   //also make a Tree of event headers that pass cuts
   name.str("");
   name << outFileName << ".root";
@@ -148,7 +154,7 @@ int main(int argc, char** argv) {
   //Lets make the summary object that I can shove into the output tree
   AnitaEventSummary * eventSummary = new AnitaEventSummary; 
   outTree->Branch("eventSummary",&eventSummary);
-
+  
 
 
   //Make a filter strategy
@@ -179,15 +185,18 @@ int main(int argc, char** argv) {
   //option to have less entries! (-1 is the default, so in case you don't specify)
   if (lenEntries == -1) lenEntries = numEntries;
 
+  int entryIndex=0;
+
   for (int entry=0; entry<lenEntries; entry++) {
-    if (entry%1==0) {
-      cout << entry << "/" << lenEntries << "\r";
+    //    if (entry%1==0) {
+      cout << entry << "/" << lenEntries << "(" << entryIndex << ")\r";
       fflush(stdout);
-    }
+      //    }
     //get all the pointers set right
     headTree->GetEntry(entry);
-    eventTree->GetEntry(entry);
-    patTree->GetEntry(entry);
+    entryIndex = eventTree->GetEntryNumberWithBestIndex(head->eventNumber);
+    eventTree->GetEntry(entryIndex);
+    patTree->GetEntry(entryIndex);
 
 
     //1) Calibrate the waveform
