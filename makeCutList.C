@@ -14,6 +14,7 @@ void makeCutList(string dataDir="0") {
   if (dataDir == "0") {
     cout << "Using default directory 01.19.17_22h" << endl;
     dataDir = "01.19.17_22h";
+  }
 
 
   TChain *inTree = new TChain("headTree","headTree");
