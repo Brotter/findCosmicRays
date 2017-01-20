@@ -32,6 +32,6 @@ else
 fi
 
 for run in `seq ${startSeq} ${stopSeq}`; do
-    nice ./findCosmicRays ${run} ${sharedDir}/${run} 1> log/${run}.log 2>&1 &
+    nice ./findCosmicRays ${run} ${sharedDir}/${run} 1> ${sharedDir}/log/${run}.log 2>&1 &
 done
     
