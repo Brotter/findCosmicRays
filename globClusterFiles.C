@@ -1,17 +1,21 @@
 #include "AnitaEventSummary.h"
 #include <sys/stat.h>
 
-void globClusterFiles(){
+void globClusterFiles(string dataDir="0"){
 
 
   TChain *resultTree = new TChain("headTree","headTree");
 
   
+  if (dataDir == "0") {
+    dataDir = "firstAttempt";
+  }
+
   stringstream name;
   struct stat buffer;   
   for (int run=130; run<193; run++) {
     name.str("");
-    name << "/home/brotter/nfsShared/results/findCosmicRays/firstAttempt/" << run << ".root";
+    name << "/home/brotter/nfsShared/results/findCosmicRays/" << dataDir << "/" << run << ".root";
 
     if (stat (name.str().c_str(), &buffer) == 0) {
       resultTree->Add(name.str().c_str()); }
