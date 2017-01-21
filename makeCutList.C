@@ -32,7 +32,7 @@ void makeCutList(string dataDir="0") {
 
 
   TH2D *hHilbVsMap = new TH2D("hHilbVsMap"," Interferometric Peak vs Hilbert Peak; Interferometric Peak (?); Hilbert Peak (mv)",
-			      150,0,0.15,     100,0,100);
+			      300,0,0.30,     100,0,200);
 
 
   TH2D *hLatVsLong = new TH2D("hLatVsLong","Peak Pointing Location; Latitude; Longitude",
