@@ -32,7 +32,7 @@ void makeCutList(string dataDir="0") {
 
 
   TH2D *hHilbVsMap = new TH2D("hHilbVsMap"," Interferometric Peak vs Hilbert Peak; Interferometric Peak (?); Hilbert Peak (mv)",
-			      300,0,0.30,     100,0,200);
+			      400,0,0.40,     300,0,300);
 
 
   TH2D *hLatVsLong = new TH2D("hLatVsLong","Peak Pointing Location; Latitude; Longitude",
@@ -90,6 +90,16 @@ void makeCutList(string dataDir="0") {
 
   c1->cd(2);
   hLatVsLong->Draw("colz");
+
+
+  TCanvas *c2 = new TCanvas("c2","c2",1000,800);
+  c2->Divide(1,2);
+  TH1D* hilb = hHilbVsMap->ProjectionY("hilb",0,100);
+  c2->cd(1);
+  hilb->Draw();
+  TH1D* interf = hHilbVsMap->ProjectionX("interf",0,100);
+  c2->cd(2);
+  interf->Draw();
 
 
   cout << "numPassingCuts: " << numPassingCuts << endl;
