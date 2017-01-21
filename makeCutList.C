@@ -20,7 +20,7 @@ void makeCutList(string dataDir="0") {
   TChain *inTree = new TChain("headTree","headTree");
 
   stringstream name;
-  for (int run=130; run<440; run++) {
+  for (int run=170; run<440; run++) {
     name.str("");
     name << "/home/brotter/nfsShared/results/findCosmicRays/" << dataDir << "/" << run << ".root";
     inTree->Add(name.str().c_str());
