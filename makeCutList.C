@@ -35,7 +35,7 @@ void makeCutList(string dataDir="0") {
 			      150,0,0.15,     100,0,100);
 
 
-  TH2D *hLatVsLong = new TH2D("pointMap","pointMap",
+  TH2D *hLatVsLong = new TH2D("hLatVsLong","Peak Pointing Location; Latitude; Longitude",
 			      1000,-90,-60,  1000, -180,180);
 
   AntarcticaMapPlotter *aMap = new AntarcticaMapPlotter("mapPlotter","mapPlotter",1000,1000);
@@ -69,8 +69,10 @@ void makeCutList(string dataDir="0") {
       aMap->setCurrentHistogram("pointMap");
       double lat = eventSummary->peak[whichPol][0].latitude;
       double lon = eventSummary->peak[0][0].longitude;
-      aMap->Fill(lat,lon);
       hLatVsLong->Fill(lat,lon);
+      
+      if ((lat > -999) && (lon > -999)) aMap->Fill(lat,lon);
+
 
     }
 
