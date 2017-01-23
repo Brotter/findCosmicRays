@@ -112,8 +112,8 @@ int main(int argc, char** argv) {
 
   char* dataDir = getenv("ANITA3_DATA");
   name.str("");
-  //  name << dataDir << "run" << runNum << "/headFile" << runNum << ".root";
-  name << dataDir << "run" << runNum << "/decimatedHeadFile" << runNum << ".root";
+  name << dataDir << "run" << runNum << "/headFile" << runNum << ".root";
+  //  name << dataDir << "run" << runNum << "/decimatedHeadFile" << runNum << ".root";
   headTree->Add(name.str().c_str());
   
   name.str("");

@@ -16,8 +16,8 @@ void drawClusterFiles() {
   TH2D *hPulsers = new TH2D("hPulsers","hPulsers",400,0,0.04,400,0,0.4);
 
 
-  resultTree->Draw("peak[1][0].value:deconvolved[1][0].peakHilbert >> hNoise","flags.pulser == 0 && flags.isVPolTrigger == 1 && flags.isPayloadBlast == 0", "");
-  resultTree->Draw("peak[1][0].value:deconvolved[1][0].peakHilbert >> hPulsers","flags.pulser != 0 && flags.isVPolTrigger == 1 && peak[1][0].masked == 0", "");
+  resultTree->Draw("peak[0][0].value:deconvolved[0][0].peakHilbert >> hNoise","flags.pulser == 0 && flags.isHPolTrigger == 1 && flags.isPayloadBlast == 0", "");
+  resultTree->Draw("peak[0][0].value:deconvolved[0][0].peakHilbert >> hPulsers","flags.pulser != 0 && flags.isHPolTrigger == 1 && peak[0][0].masked == 0", "");
 							  
 
   TExec *ex1 = new TExec("ex1","gStyle->SetPalette(1);");
@@ -28,6 +28,7 @@ void drawClusterFiles() {
 
   ex1->Draw();
   hNoise->Draw("colz");
+  c1->SaveAs("noise.png");
   ex2->Draw();
   hPulsers->Draw("colzSame");
 

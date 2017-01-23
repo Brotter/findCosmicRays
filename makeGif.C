@@ -23,22 +23,23 @@ void makeGif(string dataDir){
   }
 
   TF1 *cutLine = new TF1("cutLine","[0]*x + [1]",0,0.4);
-  cutLine->SetParameter(0,-(0.005/0.1));
-  cutLine->SetParameter(1,0.005);
+  cutLine->SetParameter(0,-(0.1/.005));
+  cutLine->SetParameter(1,0.1);
   cutLine->SetLineColor(kRed);
 
   AnitaEventSummary * eventSummary = NULL;
   inTree->SetBranchAddress("eventSummary",&eventSummary);
   
     
-  TH2D *hHilbVsMap = new TH2D("hHilbVsMap","Deconvolved vs Map Peaks;Map Peak; Deconvolved Peak",
-			      400,0,0.4,     400,0,0.04);
+  TH2D *hHilbVsMap = new TH2D("hHilbVsMap","Deconvolved vs Map Peaks;Deconvolved Hilbert Peak; Map Peak",
+			      400,0,0.04,     400,0,0.4);
   
   TGraph *gWaisPulses = new TGraph();
   gWaisPulses->SetName("gWaisPulses");
   gWaisPulses->SetMarkerStyle(3);
 
-  
+  int numCutPulses = 0;
+  int numPulses = 0;
   TGraph *gCutPulses = new TGraph();
   gWaisPulses->SetName("gCutPulses");
   gWaisPulses->SetMarkerStyle(3);
@@ -65,8 +66,9 @@ void makeGif(string dataDir){
       if (eventSummary->flags.isPayloadBlast == 1) continue;
       if (eventSummary->peak[0][0].masked == 1) continue;
       
-      double X = eventSummary->peak[0][0].value;
-      double Y = eventSummary->deconvolved[0][0].peakVal;
+      double X = eventSummary->deconvolved[0][0].peakHilbert;
+      double Y = eventSummary->peak[0][0].value;
+
 
       if (eventSummary->flags.pulser == 0) {
 	hHilbVsMap->Fill(X,Y);
@@ -77,8 +79,11 @@ void makeGif(string dataDir){
       }
       else {
 	gWaisPulses->SetPoint(gWaisPulses->GetN(),X,Y); 
-	gCutPulses->SetPoint(gCutPulses->GetN(),eventSummary->eventNumber,
-			     X);
+	numPulses++;
+	if ( cutLine->Eval(X) > Y ) {
+	  gCutPulses->SetPoint(gCutPulses->GetN(),eventSummary->eventNumber,X);
+	  numCutPulses++;
+	}
       }
       
       
@@ -92,6 +97,8 @@ void makeGif(string dataDir){
     name << "Interferometric Peak vs Hilbert Peak (run " << eventSummary->run << ")";
     name << "; Interferometric Peak; Hilbert Peak (mv)";
     hHilbVsMap->SetTitle(name.str().c_str());
+    hHilbVsMap->SetMaximum(100);
+    hHilbVsMap->SetMinimum(0);
     hHilbVsMap->Draw("colz");
     cutLine->Draw("same");
     if (gWaisPulses->GetN() > 0) {
@@ -105,12 +112,13 @@ void makeGif(string dataDir){
     hHilbVsMap->Reset();
 
   cout << " Num Passing Cuts " << numPassingCuts << endl;
-
+  cout << " Num Pulser events cut " << numCutPulses << "/" << numPulses << "(" << float(numCutPulses)/numPulses << ")" << endl;
   }
 
 
   TFile *outFile = TFile::Open("passingCuts.root","recreate");
   gPassingCuts->Write();
+  gCutPulses->Write();
   outFile->Close();
 
 

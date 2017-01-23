@@ -14,7 +14,7 @@ void loadClusterFiles(string dataDir="0"){
   struct stat buffer;   
   for (int run=130; run<170; run++) {
     name.str("");
-    name << "/Volumes/ANITA3Data/bigAnalysisFiles/findCosmicRays/" << dataDir << "/" << run << "_corrected.root";
+    name << "/Volumes/ANITA3Data/bigAnalysisFiles/findCosmicRays/" << dataDir << "/" << run << ".root";
 
     if (stat (name.str().c_str(), &buffer) == 0) {
       resultTree->Add(name.str().c_str()); }
