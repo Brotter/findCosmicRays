@@ -12,7 +12,7 @@ void makeGif(string dataDir){
 
 
   stringstream name;
-  for (int run=130; run<384; run++) {
+  for (int run=130; run<440; run++) {
  
     c1->Clear();
    
@@ -22,22 +22,34 @@ void makeGif(string dataDir){
 
   }
 
-
+  TF1 *cutLine = new TF1("cutLine","[0]*x + [1]",0,0.4);
+  cutLine->SetParameter(0,-(0.005/0.1));
+  cutLine->SetParameter(1,0.005);
+  cutLine->SetLineColor(kRed);
 
   AnitaEventSummary * eventSummary = NULL;
   inTree->SetBranchAddress("eventSummary",&eventSummary);
   
     
-  TH2D *hHilbVsMap = new TH2D("hHilbVsMap","placeholder",
-			      150,0,0.15,     100,0,100);
+  TH2D *hHilbVsMap = new TH2D("hHilbVsMap","Deconvolved vs Map Peaks;Map Peak; Deconvolved Peak",
+			      400,0,0.4,     400,0,0.04);
   
   TGraph *gWaisPulses = new TGraph();
   gWaisPulses->SetName("gWaisPulses");
+  gWaisPulses->SetMarkerStyle(3);
+
+  
+  TGraph *gCutPulses = new TGraph();
+  gWaisPulses->SetName("gCutPulses");
   gWaisPulses->SetMarkerStyle(3);
   
   
   int lenEntries = inTree->GetEntries();
     
+  int numPassingCuts = 0;
+  TGraph *gPassingCuts = new TGraph();
+  gPassingCuts->SetName("gPassingCuts");
+
   int entriesPerFrame = lenEntries/numFrames;
   for (int frame=0; frame < numFrames; frame++) {
     c1->Clear();
@@ -49,12 +61,27 @@ void makeGif(string dataDir){
     for (int entry=startEntry; entry<stopEntry; entry++) {
       inTree->GetEntry(entry);
       
+      if (eventSummary->flags.isHPolTrigger == 0) continue;
+      if (eventSummary->flags.isPayloadBlast == 1) continue;
+      if (eventSummary->peak[0][0].masked == 1) continue;
+      
+      double X = eventSummary->peak[0][0].value;
+      double Y = eventSummary->deconvolved[0][0].peakVal;
+
       if (eventSummary->flags.pulser == 0) {
-	hHilbVsMap->Fill(eventSummary->peak[0][0].value,eventSummary->coherent[0][0].peakHilbert); }
-      else if (eventSummary->flags.pulser == 1) {
-	gWaisPulses->SetPoint(gWaisPulses->GetN(),
-			      eventSummary->peak[0][0].value,
-			      eventSummary->coherent[0][0].peakHilbert); }
+	hHilbVsMap->Fill(X,Y);
+	if ( cutLine->Eval(X) < Y ) {
+	  numPassingCuts++;
+	  gPassingCuts->SetPoint(gPassingCuts->GetN(),eventSummary->eventNumber,
+				 X); }
+      }
+      else {
+	gWaisPulses->SetPoint(gWaisPulses->GetN(),X,Y); 
+	gCutPulses->SetPoint(gCutPulses->GetN(),eventSummary->eventNumber,
+			     X);
+      }
+      
+      
 
     }
     
@@ -66,6 +93,7 @@ void makeGif(string dataDir){
     name << "; Interferometric Peak; Hilbert Peak (mv)";
     hHilbVsMap->SetTitle(name.str().c_str());
     hHilbVsMap->Draw("colz");
+    cutLine->Draw("same");
     if (gWaisPulses->GetN() > 0) {
       gWaisPulses->Draw("pSame"); }
     
@@ -76,8 +104,14 @@ void makeGif(string dataDir){
     gWaisPulses->Set(0);
     hHilbVsMap->Reset();
 
+  cout << " Num Passing Cuts " << numPassingCuts << endl;
+
   }
 
+
+  TFile *outFile = TFile::Open("passingCuts.root","recreate");
+  gPassingCuts->Write();
+  outFile->Close();
 
 
 }
