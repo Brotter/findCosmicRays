@@ -1,12 +1,14 @@
 #include "FFTtools.h"
 #include "AnitaEventSummary.h"
 
-void snrMap() {
+void snrMap(string dataDir="0") {
 
 
   TChain *inTree = new TChain("headTree","headTree");
 
-  string dataDir = "/Volumes/ANITA3Data/bigAnalysisFiles/findCosmicRays/01.19.17_22h";
+  if (dataDir == "0") {
+    dataDir = "/Volumes/ANITA3Data/bigAnalysisFiles/findCosmicRays/01.19.17_22h";
+  }
 
   stringstream name;
   for (int run=130; run<440; run++) {
