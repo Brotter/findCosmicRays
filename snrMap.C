@@ -32,6 +32,7 @@ void snrMap() {
   
   TH1D *hSNR = new TH1D("hSNR","Pulser SNR (passing Cut);SNR;Occupancy",1000,0,10.0);
   TH1D *hSNRCut = new TH1D("hSNRCut","Pulser SNR (failing Cut);SNR;Occupancy",1000,0,10.0);
+  TH1D *hSNREff = new TH1D("hSNREff","Passing/Total Pulser events;SNR;Occupancy",1000,0,10.0);
 
   //Cut Counters
   int pointingCut = 0;
@@ -74,6 +75,15 @@ void snrMap() {
   hSNRCut->SetLineColor(kRed);
   hSNRCut->Draw("same");
 
+
+  for (int i=0; i<hSNR->GetNbinsX(); i++) {
+    int numCut = hSNRCut->GetBinContent(i);
+    int numPulses = hSNR->GetBinContent(i);
+    hSNREff->Fill((numPulses-numCut)/numPulses);
+  }
+
+  TCanvas *c2 = new TCanvas("c2","c2",1000,800);
+  hSNREff->Draw();
 
 
 }
