@@ -47,8 +47,8 @@ void snrMap(string dataDir="0") {
     if (eventSummary->flags.isHPolTrigger == 0) continue;
     if (eventSummary->flags.isPayloadBlast == 1) continue;
     if (eventSummary->peak[0][0].masked == 1) continue;
-    if (eventSummary->flags.pulser != 2 ) continue; //wais==1 LDB == 2
-    if (abs(FFTtools::wrap(eventSummary->peak[0][0].phi - eventSummary->ldb.phi,360,0)) > 5) {
+    if (eventSummary->flags.pulser !=1 ) continue; //wais==1 LDB == 2
+    if (abs(FFTtools::wrap(eventSummary->peak[0][0].phi - eventSummary->wais.phi,360,0)) > 5) {
       pointingCut++;
       continue; }
     
