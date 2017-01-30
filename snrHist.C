@@ -3,8 +3,6 @@
 void snrHist() {
 
 
-  TCanvas *c1 = new TCanvas("c1","c1",1000,800);
-  
   TChain *inTree = new TChain("headTree","headTree");
 
   string dataDir = "/Volumes/ANITA3Data/bigAnalysisFiles/findCosmicRays/01.19.17_22h";
@@ -12,8 +10,6 @@ void snrHist() {
   stringstream name;
   for (int run=130; run<440; run++) {
  
-    c1->Clear();
-   
     name.str("");
     name << dataDir << "/" << run << ".root";
     inTree->Add(name.str().c_str());
@@ -29,6 +25,7 @@ void snrHist() {
   inTree->SetBranchAddress("eventSummary",&eventSummary);
   
   TH1D *hSNR = new TH1D("hSNR","Pulser SNR;SNR;Occupancy",1000,0,10.0);
+  TH1D *hSNR_corr = new TH1D("hSNR_corr","Pulser SNR;SNR;Occupancy",1000,0,10.0);
   
   int lenEntries = inTree->GetEntries();
   for (int entry=0; entry<lenEntries; entry++) {
@@ -44,12 +41,15 @@ void snrHist() {
     double Y = eventSummary->peak[0][0].value;
     
     hSNR->Fill(eventSummary->coherent[0][0].snr);
-
+    hSNR_corr->Fill(eventSummary->coherent[0][0].snr/TMath::Sqrt(10.));
   
   }
 
 
-  c1->cd();
+  TCanvas *c1 = new TCanvas("c1","c1",1000,800);
+  
   hSNR->Draw();
+  hSNR_corr->SetLineColor(kRed);
+  hSNR_corr->Draw("same");
 
 }
