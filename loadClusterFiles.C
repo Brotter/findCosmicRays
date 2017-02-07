@@ -14,7 +14,7 @@ void loadClusterFiles(string dataDir="0"){
 
   stringstream name;
   struct stat buffer;   
-  for (int run=130; run<440; run++) {
+  for (int run=330; run<360; run++) {
     name.str("");
     name <<  dataDir << "/" << run << ".root";
 
