@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
 
   int numCores,core;
   string outFileName;
-  if (argc == 3) {
+  if (argc == 4) {
     outFileName = argv[1];
     numCores = atoi(argv[2]);
     core = atoi(argv[3]);
