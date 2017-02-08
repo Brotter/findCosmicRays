@@ -13,34 +13,44 @@ double addQuad(double A, double B){
     
 }
 
+
 //
 //Ben Rotter - Feb 2017 - UH Manoa
 //
 //
 //
-//depreciated... use clusterClusterer.C
 //
 //
+//
+//just like clusterer.C, except it can be run piecemeal becuase I don't want to learn threading
+//also probably the only one I'll be updating
+//
+//
+//run just clusterClusterer.C to do it all
+//
+//basically, for every point, determine the "closeness" to the nearest neighbor somehow.
 //
 //
 //
 
 
+void clusterClusterer(int numCores=1, int core=1){
 
-void clusterer(){
 
   //need to do this all the time now :(
   AnitaVersion::set(3);
 
 
   cout << "Hello!  Lets cluster some events!" << endl;
+  cout << "Core " << core << "/" << numCores << endl;
 
-  //basically, for every point, determine the "closeness" to the nearest neighbor somehow.
 
-  
+  string fisherCutName = "fisherCut.root";
+
+
   TChain *resultTree = new TChain("fisherCut","fisherCut");
 
-  resultTree->Add("fisherCut.root");
+  resultTree->Add(fisherCutName.c_str());
   
   AnitaEventSummary *eventSummary = NULL;
   resultTree->SetBranchAddress("eventSummary",&eventSummary);
@@ -51,21 +61,26 @@ void clusterer(){
 
   cout << "loading the gps and indexing it which takes awhile sorry" << endl;
   //UsefulAdu5Pat has a nice thing for taking a lat/lon and turning it back into an angle
+  //this should be included in the fisherCut resultTree now... but just check to make sure
   TChain *gpsTree = new TChain("adu5PatTree","adu5PatTree");
+  gpsTree->Add(fisherCutName.c_str());
+  
+
   char* dataDir = getenv("ANITA3_DATA");
   stringstream name;
-  for (int run=130; run<440; run++) {
-    name.str("");
-    name << dataDir << "run" << run << "/gpsEvent" << run << ".root";
-    gpsTree->Add(name.str().c_str());
+  if (gpsTree->GetEntries() == 0) {
+    cout << "didn't find the gps stuff in the resultTree so I'm loading it all" << endl;
+    for (int run=130; run<440; run++) {
+      name.str("");
+      name << dataDir << "run" << run << "/gpsEvent" << run << ".root";
+      gpsTree->Add(name.str().c_str());
+    }
   }
 
   Adu5Pat *pat = NULL;
   gpsTree->SetBranchAddress("pat",&pat);
   gpsTree->BuildIndex("eventNumber");
   cout << "loaded gps event files and built index" << endl;
-
-
 
   
   TH1D *hPhiDist = new TH1D("hPhiDist","Phi;root sum square angular separation;occupancy",
@@ -78,7 +93,9 @@ void clusterer(){
   gCloseEvs->SetTitle("gCloseEvs");
 
   
-  TFile *outFile = TFile::Open("clusterer.root","recreate");
+  name.str("");
+  name << "/home/brotter/nfsShared/results/clusterClusterer/cc_" << core << ".root";
+  TFile *outFile = TFile::Open(name.str().c_str(),"recreate");
   double currPhi,currTheta,closestPhi,closestTheta,closestQuad,lat,lon,alt;
   int run,eventNumber,closestEv;
   TTree *outTree = new TTree("clusterTree","clusterTree");
@@ -96,11 +113,14 @@ void clusterer(){
 
 
 
-
-
-
+  //separate into cores
+  int numEvPerCore = lenEntries/numCores;
+  int startEntry = core*numEvPerCore;
+  int stopEntry  = (core+1)*numEvPerCore;
+  if (core == numCores-1) stopEntry = lenEntries; //make sure you get the last ones :)
   
-  for (int entry=0; entry<lenEntries; entry++) {
+
+  for (int entry=startEntry; entry<stopEntry; entry++) {
     resultTree->GetEntry(entry);
     eventNumber = eventSummary->eventNumber;
     int run = eventSummary->run;
@@ -119,6 +139,7 @@ void clusterer(){
 
     if (entry%1 == 0) cout << entry << "/" << lenEntries << " (" << eventNumber << ")" << endl;
 
+    //still gotta loop over them all to find nearest neighbor though obnoxiously
     for (int entry2=0; entry2<lenEntries; entry2++) {
       if (entry == entry2) continue; // don't want to compare it to itself! :P
       resultTree->GetEntry(entry2);

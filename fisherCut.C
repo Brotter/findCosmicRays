@@ -4,25 +4,36 @@ void fisherCut() {
 
   
   TChain *resultTree = new TChain("headTree","headTree");
-
   char* resultsDir = getenv("ANITA3_RESULTSDIR");
+
+  TChain *gpsTree = new TChain("adu5PatTree","adu5PatTree");
+  char* dataDir = getenv("ANITA3_DATA");
 
   stringstream name;
   for (int run=130; run<440; run++) {
     name.str("");
-    //    name << "/Volumes/ANITA3Data/bigAnalysisFiles/findCosmicRays/01.19.17_22h/" << run << ".root"; 
     name << resultsDir << run << ".root";
     resultTree->Add(name.str().c_str());
+
+    name.str("");
+    name << dataDir << "run" << run << "/gpsEvent" << run << ".root";
+    gpsTree->Add(name.str().c_str());
   }
   
   AnitaEventSummary *eventSummary = NULL;
   resultTree->SetBranchAddress("eventSummary",&eventSummary);
 
+  Adu5Pat *pat = NULL;
+  gpsTree->SetBranchAddress("pat",&pat);
+  gpsTree->BuildIndex("eventNumber");
 
   TFile *outFile = TFile::Open("fisherCut.root","recreate");
   TTree *outTree = new TTree("fisherCut","fisherCut");
   outTree->Branch("eventSummary",&eventSummary);
- 
+  outTree->Branch("pat",&pat);
+  double fisherValue;
+  outTree->Branch("fisherValue",&fisherValue,"fisherValue/D");
+  
 
   int lenEntries = resultTree->GetEntries();
 
@@ -42,18 +53,19 @@ void fisherCut() {
     
     double var0 = eventSummary->peak[0][0].value;
     double var1 = eventSummary->coherent[0][0].peakHilbert;
-    double fisherVal = fisher0 + var0*fisher1 + var1*fisher2;
+    fisherValue = fisher0 + var0*fisher1 + var1*fisher2;
 
     if (eventSummary->flags.pulser !=0) {
-      if (fisherVal > 0) pulsesPassing++;
+      if (fisherValue > 0) pulsesPassing++;
       else pulsesFailing++;
     }
 
-    if (eventSummary->flags.pulser == 0 && eventSummary->flags.isHPolTrigger == 1 && fisherVal > 0) {
+    if (eventSummary->flags.pulser == 0 && eventSummary->flags.isHPolTrigger == 1 && fisherValue > 0) {
       double lat = eventSummary->peak[0][0].latitude;
       double lon = eventSummary->peak[0][0].longitude;
       if (lat < -999 || lon < -999) continue;
-      
+    
+      gpsTree->GetEntry(gpsTree->GetEntryNumberWithBestIndex(eventSummary->eventNumber));
       outTree->Fill();
       passing++;
     }
