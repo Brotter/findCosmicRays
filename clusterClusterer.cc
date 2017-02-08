@@ -69,7 +69,7 @@ double addQuad(double A, double B){
 //
 
 
-void clusterClusterer(int numCores=1, int core=0){
+void clusterClusterer(string outFileName, int numCores=1, int core=0){
 
 
   //need to do this all the time now :(
@@ -128,9 +128,7 @@ void clusterClusterer(int numCores=1, int core=0){
   gCloseEvs->SetTitle("gCloseEvs");
 
   
-  name.str("");
-  name << "/home/brotter/nfsShared/results/clusterClusterer/cc_" << core << ".root";
-  TFile *outFile = TFile::Open(name.str().c_str(),"recreate");
+  TFile *outFile = TFile::Open(outFileName.c_str(),"recreate");
   double currPhi,currTheta,closestPhi,closestTheta,closestQuad,lat,lon,alt;
   int run,eventNumber,closestEv;
   TTree *outTree = new TTree("clusterTree","clusterTree");
@@ -244,16 +242,18 @@ void clusterClusterer(int numCores=1, int core=0){
 int main(int argc, char** argv) {
 
   int numCores,core;
-  if (argc == 2) {
-    numCores = atoi(argv[1]);
-    core = atoi(argv[2]);
+  string outFileName;
+  if (argc == 3) {
+    outFileName = argv[1];
+    numCores = atoi(argv[2]);
+    core = atoi(argv[3]);
   }
   else {
-    cout << "Usage: " << argv[0] << " [numCores] [core]" << endl;
+    cout << "Usage: " << argv[0] << " [outFileName] [numCores] [core]" << endl;
     return -1;
   }
 
-  clusterClusterer(numCores,core);
+  clusterClusterer(outFileName,numCores,core);
 
   return 1;
 
