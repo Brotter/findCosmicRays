@@ -63,19 +63,19 @@ void clusterClusterer(int numCores=1, int core=1){
   //UsefulAdu5Pat has a nice thing for taking a lat/lon and turning it back into an angle
   //this should be included in the fisherCut resultTree now... but just check to make sure
   TChain *gpsTree = new TChain("adu5PatTree","adu5PatTree");
-  gpsTree->Add(fisherCutName.c_str());
+  //  gpsTree->Add(fisherCutName.c_str());
   
 
   char* dataDir = getenv("ANITA3_DATA");
   stringstream name;
-  if (gpsTree->GetEntries() == 0) {
-    cout << "didn't find the gps stuff in the resultTree so I'm loading it all" << endl;
-    for (int run=130; run<440; run++) {
-      name.str("");
-      name << dataDir << "run" << run << "/gpsEvent" << run << ".root";
+  //  if (gpsTree->GetEntries() == 0) {
+  cout << "didn't find the gps stuff in the resultTree so I'm loading it all" << endl;
+  for (int run=130; run<440; run++) {
+    name.str("");
+    name << dataDir << "run" << run << "/gpsEvent" << run << ".root";
       gpsTree->Add(name.str().c_str());
-    }
   }
+    //  }
 
   Adu5Pat *pat = NULL;
   gpsTree->SetBranchAddress("pat",&pat);
