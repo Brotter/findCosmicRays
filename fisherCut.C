@@ -60,7 +60,7 @@ void fisherCut() {
       else pulsesFailing++;
     }
 
-    if (eventSummary->flags.pulser == 0 && eventSummary->flags.isHPolTrigger == 1 && fisherValue > 0) {
+    if (eventSummary->flags.pulser == 0 && eventSummary->flags.isHPolTrigger == 1 && fisherValue3 > 0) {
       double lat = eventSummary->peak[0][0].latitude;
       double lon = eventSummary->peak[0][0].longitude;
       if (lat < -999 || lon < -999) continue;
