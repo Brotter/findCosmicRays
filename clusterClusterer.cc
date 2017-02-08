@@ -1,5 +1,40 @@
+#include <iostream>
+#include <vector>
+#include <math.h>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <ctime>
+#include <random>
+//root
+#include "TTree.h"
+#include "TChain.h"
+#include "TFile.h"
+#include "TH2.h"
+#include "TH2D.h"
+#include "TEllipse.h" 
+#include "TMarker.h" 
+#include "TStyle.h" 
+#include "TCanvas.h"
+//anita
+#include "RawAnitaEvent.h"
+#include "RawAnitaHeader.h"
+#include "UsefulAdu5Pat.h"
+#include "Adu5Pat.h"
+#include "CalibratedAnitaEvent.h"
+#include "UsefulAnitaEvent.h"
+//cosmin's stuff
 #include "AnitaEventSummary.h"
+#include "AnalysisConfig.h" 
+#include "UCFilters.h" 
+#include "PeakFinder.h" 
+#include "FilterStrategy.h" 
+#include "Correlator.h" 
+#include "Analyzer.h" 
+#include "WaveformCombiner.h"
 #include "AnitaVersion.h"
+
+using namespace std;
 
 
 double cartesianDist(Double_t A[3], Double_t B[3]) {
@@ -30,11 +65,11 @@ double addQuad(double A, double B){
 //
 //basically, for every point, determine the "closeness" to the nearest neighbor somehow.
 //
-//
+// also have to rewrite it as an actual code because otherwise it eats all memory
 //
 
 
-void clusterClusterer(int numCores=1, int core=1){
+void clusterClusterer(int numCores=1, int core=0){
 
 
   //need to do this all the time now :(
@@ -123,7 +158,7 @@ void clusterClusterer(int numCores=1, int core=1){
   for (int entry=startEntry; entry<stopEntry; entry++) {
     resultTree->GetEntry(entry);
     eventNumber = eventSummary->eventNumber;
-    int run = eventSummary->run;
+    run = eventSummary->run;
     
     gpsTree->GetEntry(gpsTree->GetEntryNumberWithBestIndex(eventNumber));
 
@@ -204,3 +239,23 @@ void clusterClusterer(int numCores=1, int core=1){
   
 
 }
+
+
+int main(int argc, char** argv) {
+
+  int numCores,core;
+  if (argc == 2) {
+    numCores = atoi(argv[1]);
+    core = atoi(argv[2]);
+  }
+  else {
+    cout << "Usage: " << argv[0] << " [numCores] [core]" << endl;
+    return -1;
+  }
+
+  clusterClusterer(numCores,core);
+
+  return 1;
+
+}
+  
