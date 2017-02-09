@@ -164,7 +164,7 @@ void clusterClusterer(string outFileName, int numCores=1, int core=0){
     for (int entry2=0; entry2<lenEntries; entry2++) {
       if (entry == entry2) continue; // don't want to compare it to itself! :P
       resultTree->GetEntry(entry2);
-
+      if ( entry2%(lenEntries/20) == 0) {cout << "*"; fflush(stdout);}
       double otherPhi = -999;
       double otherTheta=-999;
 
