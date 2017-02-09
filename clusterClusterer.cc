@@ -82,39 +82,30 @@ void clusterClusterer(string outFileName, int numCores=1, int core=0){
 
   string fisherCutName = "fisherCut.root";
 
+  TFile *resultFile = TFile::Open("fisherCut.root");
+  TTree *resultTree = (TTree*)resultFile->Get("fisherCut");
 
-  TChain *resultTree = new TChain("fisherCut","fisherCut");
-
-  resultTree->Add(fisherCutName.c_str());
-  
   AnitaEventSummary *eventSummary = NULL;
   resultTree->SetBranchAddress("eventSummary",&eventSummary);
   int lenEntries = resultTree->GetEntries();
 
-  cout << "Got the things that passed cuts, there were " << lenEntries << " of them" << endl;
-
-
-  cout << "loading the gps and indexing it which takes awhile sorry" << endl;
-  //UsefulAdu5Pat has a nice thing for taking a lat/lon and turning it back into an angle
-  //this should be included in the fisherCut resultTree now... but just check to make sure
-  TChain *gpsTree = new TChain("adu5PatTree","adu5PatTree");
-
-  //  char* dataDir = getenv("ANITA3_DATA");
-  stringstream name;
-  //  if (gpsTree->GetEntries() == 0) {
-//  cout << "didn't find the gps stuff in the resultTree so I'm loading it all" << endl;
-//  for (int run=130; run<440; run++) {
-//    name.str("");
-//    name << dataDir << "run" << run << "/gpsEvent" << run << ".root";
-//      gpsTree->Add(name.str().c_str());
-//  }
-    //  }
-
   Adu5Pat *pat = NULL;
   resultTree->SetBranchAddress("pat",&pat);
-  //  gpsTree->BuildIndex("eventNumber");
-  //  cout << "loaded gps event files and built index" << endl;
 
+  cout << "Got the things that passed cuts, there were " << lenEntries << " of them" << endl;
+
+  //UsefulAdu5Pat has a nice thing for taking a lat/lon and turning it back into an angle
+  //this should be included in the fisherCut resultTree now... but just check to make sure
+  //  char* dataDir = getenv("ANITA3_DATA");
+  //  stringstream name;
+  //  if (gpsTree->GetEntries() == 0) {
+  //  cout << "didn't find the gps stuff in the resultTree so I'm loading it all" << endl;
+  //  for (int run=130; run<440; run++) {
+  //    name.str("");
+  //    name << dataDir << "run" << run << "/gpsEvent" << run << ".root";
+  //      gpsTree->Add(name.str().c_str());
+  //  }
+  //  }
   
   TH1D *hPhiDist = new TH1D("hPhiDist","Phi;root sum square angular separation;occupancy",
 			    361,-180,180);
@@ -156,8 +147,6 @@ void clusterClusterer(string outFileName, int numCores=1, int core=0){
     eventNumber = eventSummary->eventNumber;
     run = eventSummary->run;
     
-    gpsTree->GetEntry(gpsTree->GetEntryNumberWithBestIndex(eventNumber));
-
     UsefulAdu5Pat *usefulPat = new UsefulAdu5Pat(pat);
 
     closestPhi = 999;
