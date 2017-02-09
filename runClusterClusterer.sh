@@ -34,6 +34,6 @@ startSeq=$((host*64))
 stopSeq=$(((host+1)*64-1))
 
 for core in `seq ${startSeq} ${stopSeq}`; do
-    nice ./clusterClusterer ${sharedDir}/${core}".root" 256 $core 1> ${sharedDir}/log/${core}.log 2>&1 &
+    nice ./clusterClusterer ${sharedDir}/${core}".root" 256 ${core} ${inFile} 1> ${sharedDir}/log/${core}.log 2>&1 &
 done
     
