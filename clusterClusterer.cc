@@ -69,7 +69,7 @@ double addQuad(double A, double B){
 //
 
 
-void clusterClusterer(string outFileName, int numCores=1, int core=0){
+void clusterClusterer(string outFileName, int numCores=1, int core=0, string inFileName = "fisherCut.root"){
 
 
   //need to do this all the time now :(
@@ -80,9 +80,7 @@ void clusterClusterer(string outFileName, int numCores=1, int core=0){
   cout << "Core " << core << "/" << numCores << endl;
 
 
-  string fisherCutName = "fisherCut.root";
-
-  TFile *resultFile = TFile::Open("fisherCut.root");
+  TFile *resultFile = TFile::Open(inFileName.c_str());
   TTree *resultTree = (TTree*)resultFile->Get("fisherCut");
 
   AnitaEventSummary *eventSummary = NULL;
@@ -231,17 +229,25 @@ int main(int argc, char** argv) {
 
   int numCores,core;
   string outFileName;
+  string inFileName;
   if (argc == 4) {
     outFileName = argv[1];
     numCores = atoi(argv[2]);
     core = atoi(argv[3]);
+    clusterClusterer(outFileName,numCores,core);
+  }
+  else if (argc == 5) {
+    outFileName = argv[1];
+    numCores = atoi(argv[2]);
+    core = atoi(argv[3]);
+    inFileName = argv[4];
+    clusterClusterer(outFileName,numCores,core,inFileName);
   }
   else {
-    cout << "Usage: " << argv[0] << " [outFileName] [numCores] [core]" << endl;
+    cout << "Usage: " << argv[0] << " [outFileName] [numCores] [core] [opt:inFile]" << endl;
     return -1;
   }
 
-  clusterClusterer(outFileName,numCores,core);
 
   return 1;
 

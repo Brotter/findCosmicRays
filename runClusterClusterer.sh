@@ -14,6 +14,8 @@ sharedDir="/home/brotter/nfsShared/results/clusterClusterer/"${startTime}
 mkdir ${sharedDir}
 mkdir ${sharedDir}"/log"
 
+inFile="/home/brotter/nfsShared/results/clusterClusterer/fisherCut.root"
+
 if [ `hostname | cut -d"." -f1` == "anitaI" ]; then
     host=0
 elif [ `hostname | cut -d"." -f1` == "anitaII" ]; then
