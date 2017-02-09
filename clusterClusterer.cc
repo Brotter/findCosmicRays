@@ -157,7 +157,8 @@ void clusterClusterer(string outFileName, int numCores=1, int core=0){
     currPhi = eventSummary->peak[0][0].phi;
     currTheta = eventSummary->peak[0][0].theta;
 
-    if (entry%1 == 0) cout << entry << "/" << lenEntries << " (" << eventNumber << ")" << endl;
+    cout << entry-startEntry << "/" << numEvPerCore << " (" << eventNumber << ")" << endl;
+    fflush(stdout);
 
     //still gotta loop over them all to find nearest neighbor though obnoxiously
     for (int entry2=0; entry2<lenEntries; entry2++) {
